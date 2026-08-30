@@ -6,7 +6,7 @@
 - If any genuine flesh'n'blood coder wants to provide an alternative, I'll happily pull this.
 
 ## What is JEBlock?
-JEBlock is a Dalamud plugin, that prevents the user from jumping or using emotes when a trigger /emote has been used.
+JEBlock is a Dalamud plugin, that prevents the user from jumping or using emotes when a trigger /emote is being performed.
 
 This plugin has been created to compliment
 - [GagSpeak by Cordelia](https://www.xivmodarchive.com/modid/96433)
