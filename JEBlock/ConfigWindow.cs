@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Numerics;
+
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;
 
@@ -13,20 +14,30 @@ public sealed class ConfigWindow : Window
 
     private readonly Plugin plugin;
 
-    private string triggerEmoteIdText = string.Empty;
-    private bool triggerEmoteIdValid = true;
-
     private string jumpKeyText = string.Empty;
     private bool jumpKeyValid = true;
+
+    private string blockingStatusIdText = string.Empty;
+    private bool blockingStatusIdValid = true;
+
+    private int emoteBlockDelayMs;
 
     public ConfigWindow(Plugin plugin)
         : base("JEBlock Configuration")
     {
         this.plugin = plugin;
+
+        // Applied once, the first time the window is ever opened.
+        // After that the user's own size sticks.
+        Size = new Vector2(430, 320);
+        SizeCondition = ImGuiCond.FirstUseEver;
+
+        // Free to resize, but not below this - keeps the fields and
+        // labels from clipping if the user drags it down too small.
         SizeConstraints = new WindowSizeConstraints
         {
-            MinimumSize = new Vector2(400, 260),
-            MaximumSize = new Vector2(600, 400)
+            MinimumSize = new Vector2(350, 300),
+            MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
         };
     }
 
@@ -39,113 +50,169 @@ public sealed class ConfigWindow : Window
 
     private void SyncFromConfiguration()
     {
-        triggerEmoteIdText = plugin.Configuration.TriggerEmoteId.ToString(CultureInfo.InvariantCulture);
-        triggerEmoteIdValid = true;
+        jumpKeyText = plugin.Configuration.JumpKey.ToString(
+            "X2",
+            CultureInfo.InvariantCulture);
 
-        jumpKeyText = plugin.Configuration.JumpKey.ToString("X2", CultureInfo.InvariantCulture);
         jumpKeyValid = true;
+
+        // Show an empty box rather than "00000000-0000-..." when unset,
+        // since Guid.Empty means "no status configured".
+        blockingStatusIdText = GetBlockingStatusIdText();
+        blockingStatusIdValid = true;
+
+        emoteBlockDelayMs = plugin.Configuration.EmoteBlockDelayMs;
+    }
+
+    private string GetBlockingStatusIdText()
+    {
+        return plugin.Configuration.BlockingStatusId == Guid.Empty
+            ? string.Empty
+            : plugin.Configuration.BlockingStatusId.ToString(
+                "D",
+                CultureInfo.InvariantCulture);
     }
 
     public override void Draw()
     {
+        // ----------------------------------------
+        // Loci activation status GUID
+        // ----------------------------------------
+
         ImGui.TextWrapped(
-            "When the 'Trigger' emote is being performed " +
-            "jumping and emotes will be blocked.");
-        ImGui.Spacing();
+            "When this Loci-ID is active, jumping and " +
+            "emotes will be blocked.");
 
-        // ----------------------------------------
-        // Trigger Emote ID
-        // ----------------------------------------
-        ImGui.Text("Trigger Emote-ID that activates JEBlock");
-        ImGui.SetNextItemWidth(100);
+        ImGui.SetNextItemWidth(320);
 
-        // NOTE: buffer size is 5 (not 6) - ushort.MaxValue (65535) is 5 digits,
-        // so a 6th digit slot let the box hold values that could never parse.
+        // Standard "D" format GUID is 36 chars (8-4-4-4-12). Give a little
+        // headroom in case someone pastes one with braces and we trim them.
         if (ImGui.InputText(
-                "##TriggerEmoteId",
-                ref triggerEmoteIdText,
-                5,
-                ImGuiInputTextFlags.CharsDecimal))
+                "##BlockingStatusId",
+                ref blockingStatusIdText,
+                40))
         {
-            // Validate on every keystroke for immediate feedback, but do NOT
-            // write into plugin.Configuration here - anything reading live
-            // config (e.g. IsTriggerEmoteCurrentlyActive() below) would
-            // otherwise see a half-typed value while the user is still editing.
-            triggerEmoteIdValid = triggerEmoteIdText.Length == 0
-                || ushort.TryParse(triggerEmoteIdText, NumberStyles.None, CultureInfo.InvariantCulture, out _);
+            blockingStatusIdValid =
+                blockingStatusIdText.Length == 0 ||
+                Guid.TryParse(blockingStatusIdText.Trim(), out _);
         }
 
         if (ImGui.IsItemDeactivatedAfterEdit())
         {
-            if (triggerEmoteIdValid
-                && ushort.TryParse(triggerEmoteIdText, NumberStyles.None, CultureInfo.InvariantCulture, out var emoteId))
+            var trimmed = blockingStatusIdText.Trim();
+
+            if (trimmed.Length == 0)
             {
-                plugin.Configuration.TriggerEmoteId = emoteId;
+                // Empty box means "no Loci status configured".
+                plugin.Configuration.BlockingStatusId = Guid.Empty;
                 plugin.SaveConfiguration();
+
+                blockingStatusIdValid = true;
+            }
+            else if (Guid.TryParse(trimmed, out var statusId))
+            {
+                plugin.Configuration.BlockingStatusId = statusId;
+                plugin.SaveConfiguration();
+
+                blockingStatusIdText = statusId.ToString(
+                    "D",
+                    CultureInfo.InvariantCulture);
+
+                blockingStatusIdValid = true;
             }
             else
             {
-                // Snap back to the last valid value rather than leaving
-                // garbage text sitting in the box.
-                triggerEmoteIdText = plugin.Configuration.TriggerEmoteId.ToString(CultureInfo.InvariantCulture);
-                triggerEmoteIdValid = true;
+                // Restore the last valid value rather than leaving
+                // invalid text sitting in the box.
+                blockingStatusIdText = GetBlockingStatusIdText();
+                blockingStatusIdValid = true;
             }
         }
 
-        ImGui.SameLine();
-        ImGui.TextDisabled("(222 = /Wringhands)");
+        ImGui.TextDisabled("(leave empty to disable)");
 
-        if (!triggerEmoteIdValid)
+        if (!blockingStatusIdValid)
         {
-            ImGui.TextColored(ErrorColor, "Enter a value between 0 and 65535.");
+            ImGui.TextColored(
+                ErrorColor,
+                "Enter a valid GUID, e.g. 12345678-1234-1234-1234-123456789abc.");
         }
 
         ImGui.Spacing();
+        ImGui.Separator();
+        ImGui.Spacing();
 
         // ----------------------------------------
-        // Current Emote
+        // Emote block delay
         // ----------------------------------------
-        ImGui.TextDisabled("For diagnostics, the current live Emote-ID =");
-        var currentEmoteId = plugin.GetCurrentEmoteId();
+
+        ImGui.TextWrapped(
+            "Delay between Loci-ID being detected and emotes being blocked. " +
+            "As we need to give the GagSpeak trigger time to complete.");
+        ImGui.SetNextItemWidth(100);
+
+        ImGui.InputInt("##EmoteBlockDelayMs", ref emoteBlockDelayMs, 50, 100);
+
         ImGui.SameLine();
-        ImGui.TextDisabled(currentEmoteId.HasValue ? currentEmoteId.Value.ToString(CultureInfo.InvariantCulture) : "None");
+        ImGui.TextDisabled("(ms)");
+
+        if (ImGui.IsItemDeactivatedAfterEdit())
+        {
+            emoteBlockDelayMs = Math.Clamp(emoteBlockDelayMs, 0, 10000);
+
+            plugin.Configuration.EmoteBlockDelayMs = emoteBlockDelayMs;
+            plugin.SaveConfiguration();
+        }
+
+        ImGui.Spacing();
+        ImGui.Separator();
         ImGui.Spacing();
 
         // ----------------------------------------
         // Jump key
         // ----------------------------------------
-        ImGui.Text("Jump Key (hex)");
+
+        ImGui.Text("Jump Key to be blocked");
         ImGui.SetNextItemWidth(100);
 
         if (ImGui.InputText(
                 "##JumpKey",
                 ref jumpKeyText,
                 2,
-                ImGuiInputTextFlags.CharsHexadecimal | ImGuiInputTextFlags.CharsUppercase))
+                ImGuiInputTextFlags.CharsHexadecimal |
+                ImGuiInputTextFlags.CharsUppercase))
         {
-            jumpKeyValid = jumpKeyText.Length == 0 || TryParseJumpKey(jumpKeyText, out _);
+            jumpKeyValid =
+                jumpKeyText.Length == 0 ||
+                TryParseJumpKey(jumpKeyText, out _);
         }
 
         if (ImGui.IsItemDeactivatedAfterEdit())
         {
-            if (jumpKeyValid && TryParseJumpKey(jumpKeyText, out var jumpKey))
+            if (jumpKeyValid &&
+                TryParseJumpKey(jumpKeyText, out var jumpKey))
             {
                 plugin.Configuration.JumpKey = jumpKey;
                 plugin.SaveConfiguration();
             }
             else
             {
-                jumpKeyText = plugin.Configuration.JumpKey.ToString("X2", CultureInfo.InvariantCulture);
+                jumpKeyText = plugin.Configuration.JumpKey.ToString(
+                    "X2",
+                    CultureInfo.InvariantCulture);
+
                 jumpKeyValid = true;
             }
         }
 
         ImGui.SameLine();
-        ImGui.TextDisabled("(20 = Space)");
+        ImGui.TextDisabled("(hex, 20 = Space)");
 
         if (!jumpKeyValid)
         {
-            ImGui.TextColored(ErrorColor, "Enter a hex value between 00 and FF.");
+            ImGui.TextColored(
+                ErrorColor,
+                "Enter a hex value between 00 and FF.");
         }
 
         ImGui.Spacing();
@@ -155,12 +222,13 @@ public sealed class ConfigWindow : Window
         // ----------------------------------------
         // Reset to defaults
         // ----------------------------------------
+
         if (ImGui.Button("Reset to defaults"))
         {
-            // NOTE: hardcoded fallbacks - replace with your real Configuration
-            // defaults (or named constants) if they differ from these.
-            plugin.Configuration.TriggerEmoteId = 222;
             plugin.Configuration.JumpKey = 0x20;
+            plugin.Configuration.BlockingStatusId = Guid.Empty;
+            plugin.Configuration.EmoteBlockDelayMs = 500;
+
             plugin.SaveConfiguration();
             SyncFromConfiguration();
         }
@@ -172,18 +240,31 @@ public sealed class ConfigWindow : Window
         // ----------------------------------------
         // Active status
         // ----------------------------------------
-        if (plugin.IsTriggerEmoteCurrentlyActive())
+
+        if (plugin.IsBlockingActive)
         {
             ImGui.PushStyleColor(ImGuiCol.Text, ActiveColor);
+
             ImGui.TextWrapped(
-                "Status is ACTIVE - Jump and emotes are currently blocked.");
+                "ACTIVE - Jump and emotes are currently blocked.");
+
             ImGui.PopStyleColor();
+        }
+        else
+        {
+            ImGui.TextDisabled(
+                "Inactive - Jump and emotes are allowed.");
         }
     }
 
     private static bool TryParseJumpKey(string text, out int value)
     {
-        var ok = int.TryParse(text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out value);
+        var ok = int.TryParse(
+            text,
+            NumberStyles.HexNumber,
+            CultureInfo.InvariantCulture,
+            out value);
+
         return ok && value is >= 0 and <= 0xFF;
     }
 }

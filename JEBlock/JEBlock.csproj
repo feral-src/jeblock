@@ -1,17 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Dalamud.NET.Sdk/15.0.0">
   <PropertyGroup>
-    <Version>0.0.3.0</Version>
+    <Version>1.0.0.0</Version>
 
     <Author>Vibe Code</Author>
     <Name>JEBlock</Name>
 
     <Punchline>Jump/Emote Block (JEBlock) complements Gagspeak. Lock your partner into an emote without forcing HARDCORE mode.</Punchline>
 
-    <Description>When using Triggers or Puppeteer for emotes, your partner can escape by tapping jump or performing a new /emote. This plugin blocks those actions when /wringhands is detected. You can only escape by moving your character, which may be denied or locked by the restriction from Gagspeak.</Description>
+    <Description>When using Triggers or Puppeteer for emotes, your partner can escape by tapping jump or performing a new /emote. This plugin blocks those actions when a specified Loci status effect is detected. You can only escape by moving your character, which may be denied or locked by the restriction from Gagspeak.</Description>
 
     <RepoUrl>https://github.com/feral-src/jeblock</RepoUrl>
 
     <Tags>JEBlock;plugin;gagspeak</Tags>
   </PropertyGroup>
+
+  <!--Loci.Api - lets JEBlock read Loci status effects via Dalamud IPC-->
+  <ItemGroup>
+    <ProjectReference Include="Submodules\LociAPI\Loci.Api.csproj" />
+  </ItemGroup>
+<ItemGroup>
+  <Compile Remove="Submodules\**" />
+</ItemGroup>
 </Project>
