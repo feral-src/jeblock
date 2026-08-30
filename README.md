@@ -13,7 +13,7 @@ This plugin has been created to compliment
 - [Animations by Aamborella](https://www.xivmodarchive.com/user/587548)
   
 ## Why was it created?
-When using GagSpeak with Puppeteer/Triggers to apply an emote, the target can break free by tapping jump or starting a different /emote. The accepted solution is to enable `HARDMODE PERMISSIONS` and grant access to `Force emotes`, however this unfortunately grants access to ALL emotes, and requires your partner to perform multiple steps to fully constrain and animation lock their subject.
+When using GagSpeak with Puppeteer/Triggers to apply an emote, the target can break free by tapping jump or starting a different /emote. The accepted solution is to enable `HARDMODE PERMISSIONS` and grant access to `lock in emote loop`, however this unfortunately grants access to ALL emotes, and requires your partner to perform multiple steps to fully constrain and animation lock their subject.
 
 ## Alternative solution
 - As normal, assign your preferred Amborella emote to a restraint/restriction, ensure it has "Block all movement" selected.
