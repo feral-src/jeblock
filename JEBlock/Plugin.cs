@@ -1,5 +1,6 @@
 using System;
 
+using Dalamud.Game.Command;
 using Dalamud.Hooking;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
@@ -14,11 +15,14 @@ public unsafe sealed class Plugin : IDalamudPlugin
 {
 public string Name => "JEBlock";
 
+private const string CommandName = "/jeblock";
+
 private readonly IDalamudPluginInterface pluginInterface;
 private readonly IFramework framework;
 private readonly IKeyState keyState;
 private readonly IObjectTable objectTable;
 private readonly IPluginLog log;
+private readonly ICommandManager commandManager;
 
 private readonly WindowSystem windowSystem;
 private readonly ConfigWindow configWindow;
@@ -38,13 +42,15 @@ public Plugin(
     IKeyState keyState,
     IObjectTable objectTable,
     IPluginLog log,
-    IGameInteropProvider gameInterop)
+    IGameInteropProvider gameInterop,
+    ICommandManager commandManager)
 {
     this.pluginInterface = pluginInterface;
     this.framework = framework;
     this.keyState = keyState;
     this.objectTable = objectTable;
     this.log = log;
+    this.commandManager = commandManager;
 
     Configuration =
         pluginInterface.GetPluginConfig() as Configuration
@@ -63,6 +69,15 @@ public Plugin(
     pluginInterface.UiBuilder.Draw += DrawUI;
     pluginInterface.UiBuilder.OpenConfigUi += OpenConfigUi;
     pluginInterface.UiBuilder.OpenMainUi += OpenMainUi;
+
+    // ----------------------------------------
+    // Command
+    // ----------------------------------------
+
+    commandManager.AddHandler(CommandName, new CommandInfo(OnCommand)
+    {
+        HelpMessage = "Opens the JEBlock config window."
+    });
 
     // ----------------------------------------
     // Emote hook
@@ -94,6 +109,15 @@ public Plugin(
         "JEBlock loaded. Trigger emote: {0}, Jump key: 0x{1:X2}",
         Configuration.TriggerEmoteId,
         Configuration.JumpKey);
+}
+
+// ----------------------------------------
+// Command
+// ----------------------------------------
+
+private void OnCommand(string command, string args)
+{
+    configWindow.IsOpen = !configWindow.IsOpen;
 }
 
 // ----------------------------------------
@@ -272,6 +296,8 @@ public void SaveConfiguration()
 
 public void Dispose()
 {
+    commandManager.RemoveHandler(CommandName);
+
     framework.Update -= OnFrameworkUpdate;
 
     pluginInterface.UiBuilder.Draw -= DrawUI;

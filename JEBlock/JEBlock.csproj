@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Dalamud.NET.Sdk/15.0.0">
   <PropertyGroup>
-    <Version>0.0.1.0</Version>
+    <Version>0.0.2.0</Version>
     <!-- Manifest fields (see https://github.com/goatcorp/DalamudPackager/blob/827d88dc/DalamudPackager/DalamudPackager.cs#L420) -->
     <Author>Vibe Code</Author>
     <Name>JEBlock</Name>
@@ -10,11 +10,4 @@
     <RepoUrl></RepoUrl>
     <Tags>JEBlock;plugin;gagspeak;</Tags>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Content Include=".\Data\jeblock.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Visible>false</Visible>
-    </Content>
-  </ItemGroup>
 </Project>
