@@ -6,7 +6,7 @@
 - If any genuine flesh'n'blood coder wants to provide an alternative, I'll happily pull this.
 
 ## What is JEBlock?
-JEBlock is a Dalamud plugin, that prevents the user from jumping or using emotes when a trigger /emote is being performed.
+JEBlock is a Dalamud plugin, that prevents the user from jumping or using emotes when a user defined Loci-ID is present.
 
 This plugin has been created to compliment
 - [GagSpeak by Cordelia](https://www.xivmodarchive.com/modid/96433)
@@ -19,12 +19,11 @@ When using GagSpeak with Puppeteer/Triggers to apply an emote, the target can br
 
 ## Alternative solution
 - As normal, assign your preferred Amborella emote to a restraint/restriction, ensure it has "Block all movement" selected.
+- Ensure your restraint/restriction has a Loci status effect (and note the ID number)
 - As normal, set-up a Trigger/Puppetteer to perform the `/wringhands` emote for the above.
-- Install JEBlock (no configuration is needed).
+- Install JEBlock, open the config page and enter the Loci-ID nodet above
   
-Now, when that restraint/restriction has been enabled, `/wringhands` will be triggered, and detected by JEBlock. Jumping and performing other emotes will be blocked. 
-
-Once the GagSpeak restriction/restraint is removed, the player will be able to move (which cancels the animation), and sets the plugin back to an inactive state, allowing the user to jump and perform any /emote.
+Now, when the restraint/restriction is activated, the Loci status effect will be detected by JEBlock, Jumping and performing emotes will be blocked. 
 
 # Installation
 1. Open Dalamud's settings (type `/xlsettings`)
