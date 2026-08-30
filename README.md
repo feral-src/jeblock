@@ -10,10 +10,12 @@ JEBlock is a Dalamud plugin, that prevents the user from jumping or using emotes
 
 This plugin has been created to compliment
 - [GagSpeak by Cordelia](https://www.xivmodarchive.com/modid/96433)
-- [Animations by Aamborella](https://www.xivmodarchive.com/user/587548)
+- [Animations by Amborella](https://www.xivmodarchive.com/user/587548)
+ > [!TIP]
+  > Join Amborella's discord to access the **"Superpack"** containing all their work in a single mod, aligned to `/wringhands`
   
 ## Why was it created?
-When using GagSpeak with Puppeteer/Triggers to apply an emote, the target can break free by tapping jump or starting a different /emote. The accepted solution is to enable `HARDMODE PERMISSIONS` and grant access to `Force emotes`, however this unfortunately grants access to ALL emotes, and requires your partner to perform multiple steps to fully constrain and animation lock their subject.
+When using GagSpeak with Puppeteer/Triggers to apply an emote, the target can break free by tapping jump or starting a different /emote. The accepted solution is to enable `HARDMODE PERMISSIONS` and grant access to `lock in emote loop`, however this unfortunately grants access to ALL emotes, and requires your partner to perform multiple steps to fully constrain and animation lock their subject.
 
 ## Alternative solution
 - As normal, assign your preferred Amborella emote to a restraint/restriction, ensure it has "Block all movement" selected.
