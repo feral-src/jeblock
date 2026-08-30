@@ -28,7 +28,7 @@ Once the GagSpeak restriction/restraint is removed, the player will be able to m
 1. Open Dalamud's settings (type `/xlsettings`)
 2. Click on the `[Experimental]` tab
 3. Scroll down and find `Custom Plugin Repositories`, then copy and paste the following link
-4. `https://raw.githubusercontent.com/feral-src/repo.json`
+4. `https://raw.githubusercontent.com/feral-src/jeblock/repo.json`
 5. Click `[Save]`
 6. Open the plugin installer (type `/xlplugins`) then search for `JEBlock` and click `[Install]`
    
