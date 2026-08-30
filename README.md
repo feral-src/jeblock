@@ -22,7 +22,7 @@ When using GagSpeak with Puppeteer/Triggers to apply an emote, the target can br
   
 Now, when that restraint/restriction has been enabled, `/wringhands` will be triggered, and detected by JEBlock. Jumping and performing other emotes will be blocked. 
 
-Once the GagSpeak restriction/restraint is removed, the player will be able to move (which cancels the animation), and sets the plugin back to an inactive state.
+Once the GagSpeak restriction/restraint is removed, the player will be able to move (which cancels the animation), and sets the plugin back to an inactive state, allowing the user to jump and perform any /emote.
 
 # Installation
 1. Open Dalamud's settings (type `/xlsettings`)
