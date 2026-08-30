@@ -20,7 +20,7 @@ When using GagSpeak with Puppeteer/Triggers to apply an emote, the target can br
 - As normal, set-up a Trigger/Puppetteer to perform the `/wringhands` emote for the above.
 - Install JEBlock (no configuration is needed).
   
-Now, when that restraint/restriction has been enabled, `/wringhands` will be triggered, and detected. Jumping and performing other emotes will be blocked. 
+Now, when that restraint/restriction has been enabled, `/wringhands` will be triggered, and detected by JEBlock. Jumping and performing other emotes will be blocked. 
 
 Once the GagSpeak restriction/restraint is removed, the player will be able to move (which cancels the animation), and sets the plugin back to an inactive state.
 
