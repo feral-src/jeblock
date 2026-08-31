@@ -3,5 +3,10 @@
   "Author": "Beep Boop Bip ... Vibe Code",
   "Punchline": "Jump/Emote Block (JEBlock) complements Gagspeak. Lock your partner into an emote without forcing HARDCORE mode.",
   "Description": "When using Triggers or Puppeteer for emotes, your partner may escape by tapping jump or performing a new /emote. This plugin blocks those requests if a user configured 'Loci' effect is detected.",
+  "Tags": [
+    "gagspeak",
+    "emote",
+    "loci"
+  ],
   "RepoUrl": "https://github.com/feral-src/jeblock"
 }

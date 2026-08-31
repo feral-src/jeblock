@@ -69,6 +69,16 @@ public unsafe sealed class Plugin : IDalamudPlugin
     // Used to detect local player changes.
     private nint localPlayerAddress;
 
+    // Throttles retries against Loci while its IPC isn't ready yet, so
+    // OnFrameworkUpdate doesn't call RefreshBlockingState 60x/sec.
+    private DateTime? nextLociRetryUtc;
+    private static readonly TimeSpan LociRetryInterval = TimeSpan.FromSeconds(1);
+
+    // Ensures the "Loci IPC not ready" debug line logs once per
+    // not-ready streak instead of once per retry, so a slow Loci load
+    // doesn't spam the log every second until it comes online.
+    private bool lociNotReadyLogged;
+
     public Configuration Configuration { get; }
 
     public Plugin(
@@ -310,19 +320,40 @@ public unsafe sealed class Plugin : IDalamudPlugin
             // plugin load ordering, not a real failure. Fail safe and quiet.
             IsLociAvailable = false;
             newState = false;
+            nextLociRetryUtc = DateTime.UtcNow + LociRetryInterval;
 
-            log.Debug("Loci IPC not ready yet; treating blocking as inactive for now.");
+            if (!lociNotReadyLogged)
+            {
+                log.Debug("Loci IPC not ready yet; treating blocking as inactive for now.");
+                lociNotReadyLogged = true;
+            }
+
+            SetBlockingActive(newState);
+            return;
         }
         catch (Exception ex)
         {
             // Fail safe: if Loci cannot be queried, don't block anything.
             IsLociAvailable = false;
             newState = false;
+            nextLociRetryUtc = DateTime.UtcNow + LociRetryInterval;
 
-            log.Error(
-                ex,
-                "Failed to read Loci status manager.");
+            if (!lociNotReadyLogged)
+            {
+                log.Error(ex, "Failed to read Loci status manager.");
+                lociNotReadyLogged = true;
+            }
+
+            SetBlockingActive(newState);
+            return;
         }
+
+        // A successful read (or a state that doesn't require querying Loci
+        // at all) clears any pending retry cooldown so the next real
+        // mismatch is picked up immediately rather than waiting it out,
+        // and re-arms the not-ready log so a later dropout gets reported.
+        nextLociRetryUtc = null;
+        lociNotReadyLogged = false;
 
         SetBlockingActive(newState);
     }
@@ -359,11 +390,16 @@ public unsafe sealed class Plugin : IDalamudPlugin
 
     private void OnFrameworkUpdate(IFramework _)
     {
-        // Loci may load after us. Re-check availability every frame so
-        // IsLociAvailable (and blocking state) picks it up the moment it
-        // comes online, without waiting for another ManagerChanged event.
-        if (lociGetManagerInfo.Valid != IsLociAvailable)
+        // Loci may load after us. Re-check availability periodically so
+        // IsLociAvailable (and blocking state) picks it up once it comes
+        // online, without waiting for another ManagerChanged event - but
+        // throttled so we don't hammer RefreshBlockingState (and spam the
+        // log) every single frame while Loci still isn't ready.
+        if (lociGetManagerInfo.Valid != IsLociAvailable &&
+            (!nextLociRetryUtc.HasValue || DateTime.UtcNow >= nextLociRetryUtc.Value))
+        {
             RefreshBlockingState();
+        }
 
         if (!blockingActive)
             return;
