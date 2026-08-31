@@ -1,40 +1,37 @@
 # JEBlock (Jump/Emote Block)
 
-## Important Information & Disclosure
-- This is Vibe code, 100% created by AI (Claud and ChatGPT). No human has verified this code
-- By using this, you agree that our metallic overloads may be harvesting your data
+
+## :warning: Important Information & Disclosure
+
+- This is Vibe code, 100% created by AI (Claud and ChatGPT). No human has verified this code.
+- By using this, you agree that our metallic overloads may be harvesting your data.
 - If any genuine flesh'n'blood coder wants to provide an alternative, I'll happily pull this.
+
+
 
 ## What is JEBlock?
 JEBlock is a Dalamud plugin, that prevents the user from jumping or using emotes when a user defined Loci-ID is present.
 
-This plugin has been created to compliment
-- [GagSpeak by Cordelia](https://www.xivmodarchive.com/modid/96433)
-- [Animations by Amborella](https://www.xivmodarchive.com/user/587548)
- > [!TIP]
-  > Join Amborella's discord to access the **"Superpack"** containing all their work in a single mod, aligned to `/wringhands`
-  
-## Why was it created?
-When using GagSpeak with Puppeteer/Triggers to apply an emote, the target can break free by tapping jump or starting a different /emote. The accepted solution is to enable `HARDMODE PERMISSIONS` and grant access to `lock in emote loop`, however this unfortunately grants access to ALL emotes, and requires your partner to perform multiple steps to fully constrain and animation lock their subject.
-
-## Alternative solution
-- As normal, assign your preferred Amborella emote to a restraint/restriction, ensure it has "Block all movement" selected.
-- Ensure your restraint/restriction has a Loci status effect (and note the ID number)
-- As normal, set-up a Trigger/Puppetteer to perform the `/wringhands` emote for the above.
-- Install JEBlock, open the config page and enter the Loci-ID nodet above
-  
-Now, when the restraint/restriction is activated, the Loci status effect will be detected by JEBlock, Jumping and performing emotes will be blocked. 
-
-# Installation
+When applying an emote (through Puppeteer/Triggers), the target may break free by tapping jump or starting a different /emote. The accepted GagSpeak solution is to enable `HARDMODE PERMISSIONS` and forced emotes, however, this also grants access to ALL other emotes, and requires your partner to perform multiple steps to fully constrain and animation lock their subject.
+ 
+## Installation
 1. Open Dalamud's settings (type `/xlsettings`)
 2. Click on the `[Experimental]` tab
-3. Scroll down and find `Custom Plugin Repositories`, then copy and paste the following link  
+3. Scroll down and find `Custom Plugin Repositories`, then copy and paste the following link
 `https://raw.githubusercontent.com/feral-src/DalamudPlugins/main/repo.json`
 6. Click `[Save]`
 7. Open the plugin installer (type `/xlplugins`) then search for `JEBlock` and click `[Install]`
    
+## Usage
+1. Within `Loci` find the `ID:` number for the effect you wish to use (eg `69251d44-116a-4674-8520-527f9cba3be9`)
+2. Type `/jeblock` to open up the plugins config, and paste the ID: into the provided field
+3. You are now set, whenever that `Loci` effect is present, your character should not be able to jump, or use emotes
 
 
-
+## Related links
+- [GagSpeak by Cordelia](https://www.xivmodarchive.com/modid/96433)
+- [Animations by Amborella](https://www.xivmodarchive.com/user/587548)
+ > [!TIP]
+  > Join Amborella's discord to access the **"Superpack"** containing all their work in a single mod, aligned to `/wringhands`
 
 
