@@ -24,7 +24,7 @@ When applying an emote (through Puppeteer/Triggers), the target may break free b
    
 ## Usage
 1. Within `Loci` find the `ID:` number for the effect you wish to use (eg `69251d44-116a-4674-8520-527f9cba3be9`)
-2. Type `/jeblock` to open up the plugins config, and paste the ID: into the provided field
+2. Type `/jeblock` to open up the plugins config, and paste the ID into the provided field
 3. You are now set, whenever that `Loci` effect is present, your character should not be able to jump, or use emotes
 
 
