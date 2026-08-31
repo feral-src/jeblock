@@ -32,6 +32,6 @@ When applying an emote (through Puppeteer/Triggers), the target may break free b
 - [GagSpeak by Cordelia](https://www.xivmodarchive.com/modid/96433)
 - [Animations by Amborella](https://www.xivmodarchive.com/user/587548)
  > [!TIP]
-  > Join Amborella's discord to access the **"Superpack"** containing all their work in a single mod, aligned to `/wringhands`
+  > Join Amborella's discord to access the **"Superpack"** containing all their animations in a single mod, aligned to `/wringhands`
 
 
