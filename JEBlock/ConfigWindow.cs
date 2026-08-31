@@ -73,8 +73,30 @@ public sealed class ConfigWindow : Window
                 CultureInfo.InvariantCulture);
     }
 
+    private static void SectionBreak()
+    {
+        ImGui.Spacing();
+        ImGui.Separator();
+        ImGui.Spacing();
+    }
+
     public override void Draw()
     {
+        // ----------------------------------------
+        // Loci detection status
+        // ----------------------------------------
+
+        if (plugin.IsLociAvailable)
+        {
+            ImGui.TextColored(ActiveColor, "Loci detected");
+        }
+        else
+        {
+            ImGui.TextColored(ErrorColor, "Loci not detected");
+        }
+
+        SectionBreak();
+
         // ----------------------------------------
         // Loci activation status GUID
         // ----------------------------------------
@@ -138,9 +160,7 @@ public sealed class ConfigWindow : Window
                 "Enter a valid GUID, e.g. 12345678-1234-1234-1234-123456789abc.");
         }
 
-        ImGui.Spacing();
-        ImGui.Separator();
-        ImGui.Spacing();
+        SectionBreak();
 
         // ----------------------------------------
         // Emote block delay
@@ -164,9 +184,7 @@ public sealed class ConfigWindow : Window
             plugin.SaveConfiguration();
         }
 
-        ImGui.Spacing();
-        ImGui.Separator();
-        ImGui.Spacing();
+        SectionBreak();
 
         // ----------------------------------------
         // Jump key
@@ -215,9 +233,7 @@ public sealed class ConfigWindow : Window
                 "Enter a hex value between 00 and FF.");
         }
 
-        ImGui.Spacing();
-        ImGui.Separator();
-        ImGui.Spacing();
+        SectionBreak();
 
         // ----------------------------------------
         // Reset to defaults
@@ -233,9 +249,7 @@ public sealed class ConfigWindow : Window
             SyncFromConfiguration();
         }
 
-        ImGui.Spacing();
-        ImGui.Separator();
-        ImGui.Spacing();
+        SectionBreak();
 
         // ----------------------------------------
         // Active status

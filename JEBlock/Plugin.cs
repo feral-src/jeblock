@@ -6,6 +6,7 @@ using Dalamud.Game.Command;
 using Dalamud.Hooking;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
+using Dalamud.Plugin.Ipc.Exceptions;
 using Dalamud.Plugin.Services;
 
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
@@ -50,6 +51,11 @@ public unsafe sealed class Plugin : IDalamudPlugin
 
     private readonly GetManagerInfo lociGetManagerInfo;
     private readonly EventSubscriber<nint, ManagerChangeType> lociManagerChanged;
+
+    // Whether Loci's IPC could be reached the last time we checked.
+    // Distinct from blockingActive - Loci can be detected but simply
+    // not reporting the configured status as active.
+    public bool IsLociAvailable { get; private set; }
 
     // Cached Loci blocking state.
     // Both jump and emote blocking use this value.
@@ -142,7 +148,7 @@ public unsafe sealed class Plugin : IDalamudPlugin
                 CommandName,
                 new CommandInfo(OnCommand)
                 {
-                    HelpMessage = "Opens the JEBlock config window."
+                    HelpMessage = "opens the configuration window.\n/jeblock endemote — Stops the current emote loop and return to idle stance."
                 });
 
             // ----------------------------------------
@@ -189,7 +195,35 @@ public unsafe sealed class Plugin : IDalamudPlugin
 
     private void OnCommand(string command, string args)
     {
+        var trimmedArgs = args.Trim();
+
+        if (trimmedArgs.Equals("endemote", StringComparison.OrdinalIgnoreCase))
+        {
+            EndCurrentEmote();
+            return;
+        }
+
+        if (trimmedArgs.Length > 0)
+        {
+            log.Warning("JEBlock: unknown /jeblock subcommand '{0}'.", trimmedArgs);
+            return;
+        }
+
         configWindow.IsOpen = !configWindow.IsOpen;
+    }
+
+    private void EndCurrentEmote()
+    {
+        var localPlayer = objectTable.LocalPlayer;
+
+        if (localPlayer == null || localPlayer.Address == nint.Zero)
+        {
+            log.Warning("JEBlock: /jeblock endemote — no local player found.");
+            return;
+        }
+
+        ((Character*)localPlayer.Address)->SetMode(CharacterModes.Normal, 0);
+        log.Information("JEBlock: emote ended via /jeblock endemote.");
     }
 
     // ----------------------------------------
@@ -248,6 +282,8 @@ public unsafe sealed class Plugin : IDalamudPlugin
 
         try
         {
+            IsLociAvailable = lociGetManagerInfo.Valid;
+
             if (Configuration.BlockingStatusId == Guid.Empty ||
                 !lociGetManagerInfo.Valid)
             {
@@ -257,13 +293,30 @@ public unsafe sealed class Plugin : IDalamudPlugin
             {
                 var statuses = lociGetManagerInfo.Invoke();
 
-                newState = statuses.Any(
-                    status => status.GUID == Configuration.BlockingStatusId);
+                newState = false;
+                foreach (var status in statuses)
+                {
+                    if (status.GUID == Configuration.BlockingStatusId)
+                    {
+                        newState = true;
+                        break;
+                    }
+                }
             }
+        }
+        catch (IpcNotReadyError)
+        {
+            // Loci hasn't finished registering its IPC yet - expected during
+            // plugin load ordering, not a real failure. Fail safe and quiet.
+            IsLociAvailable = false;
+            newState = false;
+
+            log.Debug("Loci IPC not ready yet; treating blocking as inactive for now.");
         }
         catch (Exception ex)
         {
             // Fail safe: if Loci cannot be queried, don't block anything.
+            IsLociAvailable = false;
             newState = false;
 
             log.Error(
@@ -306,6 +359,12 @@ public unsafe sealed class Plugin : IDalamudPlugin
 
     private void OnFrameworkUpdate(IFramework _)
     {
+        // Loci may load after us. Re-check availability every frame so
+        // IsLociAvailable (and blocking state) picks it up the moment it
+        // comes online, without waiting for another ManagerChanged event.
+        if (lociGetManagerInfo.Valid != IsLociAvailable)
+            RefreshBlockingState();
+
         if (!blockingActive)
             return;
 
