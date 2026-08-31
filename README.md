@@ -1,13 +1,9 @@
 # JEBlock (Jump/Emote Block)
 
-
-## :warning: Important Information & Disclosure
-
-- This is Vibe code, 100% created by AI (Claud and ChatGPT). No human has verified this code.
-- By using this, you agree that our metallic overloads may be harvesting your data.
-- If any genuine flesh'n'blood coder wants to provide an alternative, I'll happily pull this.
-
-
+ > [!IMPORTANT]
+> - This is Vibe code, 100% created by AI (Claud and ChatGPT). No human has verified this code.
+> - By using this, you agree that our metallic overloads may be harvesting your data.
+> - If any genuine flesh'n'blood coder wants to provide an alternative, I'll happily pull this.
 
 ## What is JEBlock?
 JEBlock is a Dalamud plugin, that prevents the user from jumping or using emotes when a user defined Loci-ID is present.
@@ -26,6 +22,9 @@ When applying an emote (through Puppeteer/Triggers), the target may break free b
 1. Within `Loci` find the `ID:` number for the effect you wish to use (eg `69251d44-116a-4674-8520-527f9cba3be9`)
 2. Type `/jeblock` to open up the plugins config, and paste the ID into the provided field
 3. You are now set, whenever that `Loci` effect is present, your character should not be able to jump, or use emotes
+ > [!TIP]
+> This plugin also provides a `/jeblock endemote` command. This can be used in a GagSpeak trigger to reset your character to an idle stance once a restraint/restriction is set to `Disabled`
+
 
 
 ## Related links
