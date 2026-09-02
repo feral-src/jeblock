@@ -9,7 +9,6 @@ using Dalamud.Plugin;
 using Dalamud.Plugin.Ipc.Exceptions;
 using Dalamud.Plugin.Services;
 
-using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 
 using LociApi.Enums;
@@ -158,7 +157,7 @@ public unsafe sealed class Plugin : IDalamudPlugin
                 CommandName,
                 new CommandInfo(OnCommand)
                 {
-                    HelpMessage = "opens the configuration window.\n/jeblock endemote — Stops the current emote loop and return to idle stance."
+                    HelpMessage = "opens the configuration window."
                 });
 
             // ----------------------------------------
@@ -207,12 +206,6 @@ public unsafe sealed class Plugin : IDalamudPlugin
     {
         var trimmedArgs = args.Trim();
 
-        if (trimmedArgs.Equals("endemote", StringComparison.OrdinalIgnoreCase))
-        {
-            EndCurrentEmote();
-            return;
-        }
-
         if (trimmedArgs.Length > 0)
         {
             log.Warning("JEBlock: unknown /jeblock subcommand '{0}'.", trimmedArgs);
@@ -220,20 +213,6 @@ public unsafe sealed class Plugin : IDalamudPlugin
         }
 
         configWindow.IsOpen = !configWindow.IsOpen;
-    }
-
-    private void EndCurrentEmote()
-    {
-        var localPlayer = objectTable.LocalPlayer;
-
-        if (localPlayer == null || localPlayer.Address == nint.Zero)
-        {
-            log.Warning("JEBlock: /jeblock endemote — no local player found.");
-            return;
-        }
-
-        ((Character*)localPlayer.Address)->SetMode(CharacterModes.Normal, 0);
-        log.Information("JEBlock: emote ended via /jeblock endemote.");
     }
 
     // ----------------------------------------
